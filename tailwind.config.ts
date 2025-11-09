@@ -47,6 +47,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        mint: "hsl(var(--mint))",
+        lavender: "hsl(var(--lavender))",
+        sky: "hsl(var(--sky))",
+        peach: "hsl(var(--peach))",
+        calm: "hsl(var(--calm))",
+        mood: {
+          happy: "hsl(var(--mood-happy))",
+          sad: "hsl(var(--mood-sad))",
+          angry: "hsl(var(--mood-angry))",
+          neutral: "hsl(var(--mood-neutral))",
+          excited: "hsl(var(--mood-excited))",
+        },
+        progress: {
+          bg: "hsl(var(--progress-bg))",
+          fill: "hsl(var(--progress-fill))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
