@@ -131,7 +131,7 @@ const Index = () => {
             title="Personal Calendar"
             description="Track habits and goals"
             gradient="bg-gradient-to-br from-lavender/30 to-secondary/30"
-            onClick={() => console.log("Navigate to Calendar")}
+            onClick={() => navigate("/calendar")}
           />
           <NavigationTile
             icon={Bot}

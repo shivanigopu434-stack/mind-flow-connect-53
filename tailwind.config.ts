@@ -59,6 +59,12 @@ export default {
           neutral: "hsl(var(--mood-neutral))",
           excited: "hsl(var(--mood-excited))",
         },
+        activity: {
+          meditation: "hsl(var(--activity-meditation))",
+          task: "hsl(var(--activity-task))",
+          mood: "hsl(var(--activity-mood))",
+          goal: "hsl(var(--activity-goal))",
+        },
         progress: {
           bg: "hsl(var(--progress-bg))",
           fill: "hsl(var(--progress-fill))",

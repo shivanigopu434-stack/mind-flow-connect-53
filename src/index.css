@@ -56,6 +56,12 @@ All colors MUST be HSL.
     --progress-bg: 210 40% 94%;
     --progress-fill: 180 50% 60%;
     
+    /* Activity colors for calendar */
+    --activity-meditation: 270 60% 70%;
+    --activity-task: 200 60% 70%;
+    --activity-mood: 330 60% 70%;
+    --activity-goal: 150 60% 70%;
+    
     /* Gradients */
     --gradient-calm: linear-gradient(135deg, hsl(180 50% 85%) 0%, hsl(200 60% 88%) 100%);
     
@@ -124,6 +130,12 @@ All colors MUST be HSL.
     /* Progress colors - dark mode */
     --progress-bg: 220 20% 18%;
     --progress-fill: 180 50% 50%;
+    
+    /* Activity colors - dark mode */
+    --activity-meditation: 270 50% 55%;
+    --activity-task: 200 50% 55%;
+    --activity-mood: 330 50% 55%;
+    --activity-goal: 150 50% 55%;
     
     /* Gradients - dark mode */
     --gradient-calm: linear-gradient(135deg, hsl(180 30% 20%) 0%, hsl(200 40% 25%) 100%);
