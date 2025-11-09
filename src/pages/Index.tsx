@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Settings, Target, Zap, Flame, Brain, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "@/components/ProgressBar";
 import StatCard from "@/components/StatCard";
 import MoodTracker from "@/components/MoodTracker";
@@ -11,6 +12,7 @@ type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai";
 
 const Index = () => {
   const [activeNav, setActiveNav] = useState<NavItem>("home");
+  const navigate = useNavigate();
 
   // Mock data
   const userData = {
@@ -110,16 +112,34 @@ const Index = () => {
         {/* Navigation Tiles */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground mb-4">Explore</h2>
-          {navigationTiles.map((tile, index) => (
-            <NavigationTile
-              key={index}
-              icon={tile.icon}
-              title={tile.title}
-              description={tile.description}
-              gradient={tile.gradient}
-              onClick={() => console.log(`Navigate to ${tile.title}`)}
-            />
-          ))}
+          <NavigationTile
+            icon={Brain}
+            title="Mindfulness"
+            description="Meditate, breathe, and find calm"
+            gradient="bg-gradient-to-br from-mint/30 to-sky/30"
+            onClick={() => navigate("/mindfulness")}
+          />
+          <NavigationTile
+            icon={Zap}
+            title="Productivity"
+            description="Boost your focus and energy"
+            gradient="bg-gradient-to-br from-peach/30 to-mood-excited/20"
+            onClick={() => console.log("Navigate to Productivity")}
+          />
+          <NavigationTile
+            icon={Target}
+            title="Personal Calendar"
+            description="Track habits and goals"
+            gradient="bg-gradient-to-br from-lavender/30 to-secondary/30"
+            onClick={() => console.log("Navigate to Calendar")}
+          />
+          <NavigationTile
+            icon={Bot}
+            title="AI Buddy"
+            description="Chat with your wellness assistant"
+            gradient="bg-gradient-to-br from-sky/30 to-primary/30"
+            onClick={() => console.log("Navigate to AI Buddy")}
+          />
         </div>
       </div>
 
