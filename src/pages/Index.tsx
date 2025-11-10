@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Target, Zap, Flame, Brain, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 import ProgressBar from "@/components/ProgressBar";
 import StatCard from "@/components/StatCard";
 import MoodTracker from "@/components/MoodTracker";
@@ -12,11 +14,34 @@ type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai";
 
 const Index = () => {
   const [activeNav, setActiveNav] = useState<NavItem>("home");
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  // Mock data
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        if (!session) {
+          navigate("/auth");
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  // User data with personalized name
   const userData = {
-    name: "Mind Master",
+    name: user?.email?.split("@")[0] || "Mind Master",
     focusedMinutes: 45,
     level: 5,
     currentXP: 680,
@@ -67,7 +92,15 @@ const Index = () => {
                 You've focused <span className="font-semibold text-primary">{userData.focusedMinutes} minutes</span> today
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate("/auth");
+              }}
+            >
               <Settings className="text-muted-foreground" />
             </Button>
           </div>
