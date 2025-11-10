@@ -8,6 +8,7 @@ import Mindfulness from "./pages/Mindfulness";
 import Calendar from "./pages/Calendar";
 import AIBuddy from "./pages/AIBuddy";
 import Auth from "./pages/Auth";
+import Productivity from "./pages/Productivity";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/mindfulness" element={<Mindfulness />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/productivity" element={<Productivity />} />
           <Route path="/ai-buddy" element={<AIBuddy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

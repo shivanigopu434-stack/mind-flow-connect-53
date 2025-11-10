@@ -157,7 +157,7 @@ const Index = () => {
             title="Productivity"
             description="Boost your focus and energy"
             gradient="bg-gradient-to-br from-peach/30 to-mood-excited/20"
-            onClick={() => console.log("Navigate to Productivity")}
+            onClick={() => navigate("/productivity")}
           />
           <NavigationTile
             icon={Target}
