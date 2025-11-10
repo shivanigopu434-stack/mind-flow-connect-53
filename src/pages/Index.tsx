@@ -138,7 +138,7 @@ const Index = () => {
             title="AI Buddy"
             description="Chat with your wellness assistant"
             gradient="bg-gradient-to-br from-sky/30 to-primary/30"
-            onClick={() => console.log("Navigate to AI Buddy")}
+            onClick={() => navigate("/ai-buddy")}
           />
         </div>
       </div>
