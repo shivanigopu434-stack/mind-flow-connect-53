@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Target, Zap, Flame, Brain, Bot } from "lucide-react";
+import { Settings, Target, Zap, Flame, Brain, Bot, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,12 +86,27 @@ const Index = () => {
                 You've focused <span className="font-semibold text-primary">{userData.focusedMinutes} minutes</span> today
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={async () => {
-            await supabase.auth.signOut();
-            navigate("/auth");
-          }}>
-              <Settings className="text-muted-foreground" />
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full" 
+                onClick={() => navigate("/profile")}
+              >
+                <UserIcon className="text-muted-foreground" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full" 
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  navigate("/auth");
+                }}
+              >
+                <Settings className="text-muted-foreground" />
+              </Button>
+            </div>
           </div>
 
           {/* Progress Section */}
