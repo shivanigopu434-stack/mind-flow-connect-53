@@ -53,12 +53,48 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          badge: string
+          created_at: string
+          id: string
+          level: number
+          name: string
+          unique_id: string
+          updated_at: string
+          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          badge?: string
+          created_at?: string
+          id: string
+          level?: number
+          name?: string
+          unique_id: string
+          updated_at?: string
+          xp?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          badge?: string
+          created_at?: string
+          id?: string
+          level?: number
+          name?: string
+          unique_id?: string
+          updated_at?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_wellness_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

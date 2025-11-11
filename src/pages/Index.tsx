@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Settings, Target, Zap, Flame, Brain, Bot } from "lucide-react";
+import { Settings, Target, Zap, Flame, Brain, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import ProgressBar from "@/components/ProgressBar";
 import StatCard from "@/components/StatCard";
 import MoodTracker from "@/components/MoodTracker";
@@ -14,7 +14,7 @@ type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai";
 
 const Index = () => {
   const [activeNav, setActiveNav] = useState<NavItem>("home");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -172,6 +172,13 @@ const Index = () => {
             description="Chat with your wellness assistant"
             gradient="bg-gradient-to-br from-sky/30 to-primary/30"
             onClick={() => navigate("/ai-buddy")}
+          />
+          <NavigationTile
+            icon={User}
+            title="Profile"
+            description="Manage your wellness profile"
+            gradient="bg-gradient-to-br from-lavender/30 to-peach/30"
+            onClick={() => navigate("/profile")}
           />
         </div>
       </div>
