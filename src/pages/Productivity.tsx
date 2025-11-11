@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare, Target, Bell, Heart, Pill, ArrowLeft, Check, X } from "lucide-react";
+import { Plus, CheckSquare, Target, Bell, Heart, Pill, ArrowLeft, Check, X, BellOff } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,10 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { Switch } from "@/components/ui/switch";
+import { Preferences } from "@capacitor/preferences";
 
 type ItemType = "task" | "goal" | "reminder" | "self-care" | "medicine";
 
@@ -46,11 +50,42 @@ const Productivity = () => {
   const [description, setDescription] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("09:00");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  
+  const { scheduleNotification, cancelNotification, rescheduleAllNotifications } = useNotifications();
+  const { isOnline, saveItemLocally, getLocalItems, addPendingChange } = useOfflineSync();
 
   useEffect(() => {
     checkAuth();
     fetchItems();
-  }, []);
+    loadNotificationSettings();
+    
+    // Handle notification actions
+    const handleMarkDone = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const itemId = customEvent.detail;
+      const item = items.find(i => i.id === itemId);
+      if (item) toggleComplete(itemId, item.completed);
+    };
+
+    const handleSnooze = async (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const itemId = customEvent.detail;
+      const item = items.find(i => i.id === itemId);
+      if (item) {
+        const newTime = new Date(new Date(item.scheduled_at).getTime() + 5 * 60 * 1000);
+        await scheduleNotification(itemId, item.title, newTime);
+      }
+    };
+
+    window.addEventListener('notification-mark-done', handleMarkDone);
+    window.addEventListener('notification-snooze', handleSnooze);
+
+    return () => {
+      window.removeEventListener('notification-mark-done', handleMarkDone);
+      window.removeEventListener('notification-snooze', handleSnooze);
+    };
+  }, [items]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -59,15 +94,64 @@ const Productivity = () => {
     }
   };
 
+  const loadNotificationSettings = async () => {
+    const { value } = await Preferences.get({ key: 'notificationsEnabled' });
+    setNotificationsEnabled(value !== 'false');
+  };
+
+  const toggleNotifications = async (enabled: boolean) => {
+    setNotificationsEnabled(enabled);
+    await Preferences.set({ key: 'notificationsEnabled', value: String(enabled) });
+    
+    if (enabled) {
+      // Reschedule all notifications
+      const schedules = items
+        .filter(item => !item.completed && !item.missed)
+        .map(item => ({
+          id: item.id,
+          title: item.title,
+          scheduledTime: new Date(item.scheduled_at),
+        }));
+      await rescheduleAllNotifications(schedules);
+    }
+    
+    toast({
+      title: enabled ? "Notifications enabled" : "Notifications disabled",
+      description: enabled ? "You'll receive reminders 10 minutes before tasks" : "No reminders will be sent",
+    });
+  };
+
   const fetchItems = async () => {
     try {
-      const { data, error } = await supabase
-        .from("productivity_items")
-        .select("*")
-        .order("scheduled_at", { ascending: true });
+      if (isOnline) {
+        const { data, error } = await supabase
+          .from("productivity_items")
+          .select("*")
+          .order("scheduled_at", { ascending: true });
 
-      if (error) throw error;
-      setItems((data || []) as ProductivityItem[]);
+        if (error) throw error;
+        const fetchedItems = (data || []) as ProductivityItem[];
+        setItems(fetchedItems);
+        
+        // Save to local storage
+        for (const item of fetchedItems) {
+          await saveItemLocally(item);
+        }
+        
+        // Reschedule all notifications
+        const schedules = fetchedItems
+          .filter(item => !item.completed && !item.missed)
+          .map(item => ({
+            id: item.id,
+            title: item.title,
+            scheduledTime: new Date(item.scheduled_at),
+          }));
+        await rescheduleAllNotifications(schedules);
+      } else {
+        // Load from local storage when offline
+        const localItems = await getLocalItems();
+        setItems(localItems as ProductivityItem[]);
+      }
     } catch (error) {
       console.error("Error fetching items:", error);
       toast({
@@ -98,19 +182,31 @@ const Productivity = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("productivity_items").insert({
+      const newItem = {
+        id: crypto.randomUUID(),
         user_id: user.id,
         type: selectedType,
         title,
         description: description || null,
         scheduled_at: scheduledDateTime.toISOString(),
-      });
+        completed: false,
+        missed: false,
+      };
 
-      if (error) throw error;
+      if (isOnline) {
+        const { error } = await supabase.from("productivity_items").insert(newItem);
+        if (error) throw error;
+      } else {
+        await saveItemLocally(newItem);
+        await addPendingChange({ action: 'insert', item: newItem });
+      }
+
+      // Schedule notification
+      await scheduleNotification(newItem.id, title, scheduledDateTime);
 
       toast({
         title: "Success",
-        description: "Item added successfully",
+        description: isOnline ? "Item added successfully" : "Item saved locally. Will sync when online.",
       });
 
       setIsDialogOpen(false);
@@ -136,12 +232,28 @@ const Productivity = () => {
 
   const toggleComplete = async (id: string, currentCompleted: boolean) => {
     try {
-      const { error } = await supabase
-        .from("productivity_items")
-        .update({ completed: !currentCompleted, missed: false })
-        .eq("id", id);
+      const updatedItem = items.find(i => i.id === id);
+      if (!updatedItem) return;
 
-      if (error) throw error;
+      const update = { ...updatedItem, completed: !currentCompleted, missed: false };
+
+      if (isOnline) {
+        const { error } = await supabase
+          .from("productivity_items")
+          .update({ completed: !currentCompleted, missed: false })
+          .eq("id", id);
+
+        if (error) throw error;
+      } else {
+        await saveItemLocally(update);
+        await addPendingChange({ action: 'update', item: update });
+      }
+
+      // Cancel notification if completing
+      if (!currentCompleted) {
+        await cancelNotification(id);
+      }
+
       fetchItems();
     } catch (error) {
       console.error("Error updating item:", error);
@@ -174,12 +286,23 @@ const Productivity = () => {
 
   const deleteItem = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("productivity_items")
-        .delete()
-        .eq("id", id);
+      const deletedItem = items.find(i => i.id === id);
+      if (!deletedItem) return;
 
-      if (error) throw error;
+      if (isOnline) {
+        const { error } = await supabase
+          .from("productivity_items")
+          .delete()
+          .eq("id", id);
+
+        if (error) throw error;
+      } else {
+        await addPendingChange({ action: 'delete', item: deletedItem });
+      }
+
+      // Cancel notification
+      await cancelNotification(id);
+
       fetchItems();
       toast({
         title: "Success",
@@ -219,13 +342,27 @@ const Productivity = () => {
             <h1 className="text-3xl font-bold text-foreground">My Day</h1>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Item
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+              {notificationsEnabled ? (
+                <Bell className="h-4 w-4 text-primary" />
+              ) : (
+                <BellOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span className="text-sm text-muted-foreground">Reminders</span>
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={toggleNotifications}
+              />
+            </div>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Item
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Item</DialogTitle>
@@ -321,7 +458,8 @@ const Productivity = () => {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         <ScrollArea className="h-[calc(100vh-200px)]">
