@@ -1,11 +1,4 @@
-import type { Personality } from "@/pages/AIBuddy";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import type { Personality, Message } from "@/screens/AIBuddyScreen";
 
 interface ChatMessageProps {
   message: Message;

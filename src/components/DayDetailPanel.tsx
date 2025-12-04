@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Trash2, Flower2, CheckSquare, Smile, Target } from "lucide-react";
 import { format } from "date-fns";
-import { Activity } from "@/pages/Calendar";
+import { Activity } from "@/screens/CalendarScreen";
 import { cn } from "@/lib/utils";
 
 interface DayDetailPanelProps {
