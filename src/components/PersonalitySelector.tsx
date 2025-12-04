@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import type { Personality } from "@/pages/AIBuddy";
+import type { Personality } from "@/screens/AIBuddyScreen";
 
 interface PersonalitySelectorProps {
   open: boolean;
