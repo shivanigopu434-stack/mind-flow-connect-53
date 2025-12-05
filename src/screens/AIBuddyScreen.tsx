@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Settings, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Settings, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ChatMessage from "@/components/ChatMessage";
@@ -9,6 +9,12 @@ import PersonalitySelector from "@/components/PersonalitySelector";
 import DataIntegrationPanel from "@/components/DataIntegrationPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+interface TaskSuggestion {
+  title: string;
+  type: string;
+  scheduled_at: string;
+}
 
 export type Personality = "friendly" | "strict" | "caring" | "sarcastic";
 
@@ -114,6 +120,11 @@ const AIBuddyScreen = () => {
       if (error) throw error;
 
       addAIMessage(data.message);
+
+      // Handle task creation if AI suggested one
+      if (data.task) {
+        await handleTaskCreation(data.task);
+      }
     } catch (error) {
       console.error("Error calling AI:", error);
       toast({
@@ -121,10 +132,44 @@ const AIBuddyScreen = () => {
         description: "I'm having trouble connecting. Let me try again.",
         variant: "destructive",
       });
-      // Fallback response
       addAIMessage("Hey, I'm having a moment here. Mind trying that again?");
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleTaskCreation = async (task: TaskSuggestion) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Sign in needed",
+          description: "Sign in to save tasks to your list.",
+        });
+        return;
+      }
+
+      const { error } = await supabase.from("productivity_items").insert({
+        title: task.title,
+        type: task.type,
+        scheduled_at: task.scheduled_at,
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Task added",
+        description: `"${task.title}" added to your list.`,
+      });
+    } catch (error) {
+      console.error("Error creating task:", error);
+      toast({
+        title: "Couldn't save task",
+        description: "Something went wrong. Try again?",
+        variant: "destructive",
+      });
     }
   };
 
