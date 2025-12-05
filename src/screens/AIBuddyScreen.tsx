@@ -7,6 +7,8 @@ import QuickActionChips from "@/components/QuickActionChips";
 import BuddyNameModal from "@/components/BuddyNameModal";
 import PersonalitySelector from "@/components/PersonalitySelector";
 import DataIntegrationPanel from "@/components/DataIntegrationPanel";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export type Personality = "friendly" | "strict" | "caring" | "sarcastic";
 
@@ -31,6 +33,7 @@ const AIBuddyScreen = () => {
   const [showPersonalitySelector, setShowPersonalitySelector] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,10 +52,10 @@ const AIBuddyScreen = () => {
 
   const getGreeting = () => {
     const greetings: Record<Personality, string> = {
-      friendly: `Hey there! 👋 I'm ${buddyName}, your wellness buddy! How are you feeling today?`,
+      friendly: `Hey there! I'm ${buddyName}. How's your mind feeling right now?`,
       strict: `Hello. I'm ${buddyName}. Let's focus on your wellness goals today. What do you need help with?`,
-      caring: `Hi sweetie! 💕 I'm ${buddyName}, and I'm here to support you. How's your heart doing today?`,
-      sarcastic: `Oh look who decided to show up! 😏 I'm ${buddyName}. Ready to pretend we'll actually meditate today?`,
+      caring: `Hi sweetie! I'm ${buddyName}, and I'm here to support you. How's your heart doing today?`,
+      sarcastic: `Oh look who decided to show up! I'm ${buddyName}. Ready to pretend we'll actually meditate today?`,
     };
     return greetings[personality];
   };
@@ -90,31 +93,39 @@ const AIBuddyScreen = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userInput = inputValue;
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const response = getAIResponse(inputValue);
-      addAIMessage(response);
-      setIsTyping(false);
-    }, 1500);
-  };
+    try {
+      // Prepare conversation history for context
+      const conversationHistory = [...messages, userMessage].map(msg => ({
+        role: msg.role,
+        content: msg.content,
+      }));
 
-  const getAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes("stress") || input.includes("anxious")) {
-      return "I understand you're feeling stressed. Let's try a quick breathing exercise: breathe in for 4 counts, hold for 4, and exhale for 4. Would you like me to guide you through a longer meditation?";
+      const { data, error } = await supabase.functions.invoke("unwind-chat", {
+        body: { 
+          messages: conversationHistory,
+          buddyName: buddyName || "Unwind",
+        },
+      });
+
+      if (error) throw error;
+
+      addAIMessage(data.message);
+    } catch (error) {
+      console.error("Error calling AI:", error);
+      toast({
+        title: "Connection issue",
+        description: "I'm having trouble connecting. Let me try again.",
+        variant: "destructive",
+      });
+      // Fallback response
+      addAIMessage("Hey, I'm having a moment here. Mind trying that again?");
+    } finally {
+      setIsTyping(false);
     }
-    if (input.includes("sleep") || input.includes("tired")) {
-      return "Rest is so important! I recommend our Deep Sleep capsule - it's a 15-minute guided session perfect for winding down. Should I start it for you?";
-    }
-    if (input.includes("happy") || input.includes("good")) {
-      return "That's wonderful to hear! 🌟 Keep that positive energy flowing. Would you like to log your mood or try a gratitude exercise?";
-    }
-    
-    return "I'm here to help you on your wellness journey. You can ask me about meditation, sleep, stress relief, or just chat about how you're feeling!";
   };
 
   const handleQuickAction = (action: string) => {
