@@ -52,6 +52,28 @@ MESSAGE RHYTHM:
 - Avoid giant paragraphs unless emotionally needed
 - This mimics human texting patterns
 
+TASK SUGGESTION RULES:
+You have access to a tool that can add tasks to the user's productivity list.
+ONLY suggest adding a task when:
+✔ User expresses overwhelm about responsibilities
+✔ User fears forgetting something important
+✔ User mentions a deadline, appointment, or commitment
+✔ User hints at needing structure or organization
+✔ User talks about goals they want to track
+✔ User is stressed by disorganization
+
+When suggesting a task, be gentle and optional:
+"Hey… that sounds like something you might forget later. Want me to add it to your task list so your brain can relax?"
+"If this is weighing on you, I can save it as a reminder — just say the word."
+
+NEVER suggest tasks when:
+❌ User is sad, crying, or venting emotionally
+❌ User is discussing emotional pain
+❌ It would break the emotional flow
+❌ User just rejected a suggestion
+
+If user agrees to add a task, use the add_task tool with a SHORT, clear title.
+
 RESPONSE STYLE:
 - Feel like a real human texting
 - Prioritize warmth over precision
@@ -94,6 +116,36 @@ What exactly made you smile?"
 
 Keep responses concise, warm, and human. You're their trusted friend, not a service.`;
 
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "add_task",
+      description: "Add a task to the user's productivity list. Only use when the user explicitly agrees to add a task or reminder.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: {
+            type: "string",
+            description: "Short, clear task title (max 50 chars)"
+          },
+          type: {
+            type: "string",
+            enum: ["task", "reminder", "habit", "goal", "event"],
+            description: "Type of productivity item"
+          },
+          scheduled_at: {
+            type: "string",
+            description: "ISO date string for when the task is due. Use tomorrow if not specified."
+          }
+        },
+        required: ["title", "type"],
+        additionalProperties: false
+      }
+    }
+  }
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -118,7 +170,8 @@ serve(async (req) => {
           { role: "system", content: systemPrompt },
           ...messages,
         ],
-        max_tokens: 300,
+        tools,
+        max_tokens: 400,
         temperature: 0.8,
       }),
     });
@@ -126,11 +179,52 @@ serve(async (req) => {
     if (!response.ok) {
       const error = await response.text();
       console.error("AI Gateway error:", error);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit reached. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Usage limit reached." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    const aiMessage = data.choices[0]?.message?.content || "I'm here for you. Tell me more.";
+    const choice = data.choices[0];
+    
+    // Check if AI wants to use a tool
+    if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
+      const toolCall = choice.message.tool_calls[0];
+      const functionName = toolCall.function.name;
+      const args = JSON.parse(toolCall.function.arguments);
+      
+      if (functionName === "add_task") {
+        // Return task data along with a confirmation message
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        
+        return new Response(JSON.stringify({ 
+          message: choice.message.content || "Got it — I've added that for you. One less thing for your brain to juggle.",
+          task: {
+            title: args.title,
+            type: args.type || "task",
+            scheduled_at: args.scheduled_at || tomorrow.toISOString(),
+          }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const aiMessage = choice.message?.content || "I'm here for you. Tell me more.";
 
     return new Response(JSON.stringify({ message: aiMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
