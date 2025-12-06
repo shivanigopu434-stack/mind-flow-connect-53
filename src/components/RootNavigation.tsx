@@ -8,8 +8,9 @@ import MindfulnessScreen from "@/screens/MindfulnessScreen";
 import CalendarScreen from "@/screens/CalendarScreen";
 import MateVibesScreen from "@/screens/MateVibesScreen";
 import AIBuddyScreen from "@/screens/AIBuddyScreen";
+import SpinScreen from "@/screens/SpinScreen";
 
-export type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai";
+export type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai" | "spin";
 
 const RootNavigation = () => {
   const [currentIndex, setCurrentIndex] = useState<NavItem>("home");
@@ -44,6 +45,9 @@ const RootNavigation = () => {
       <div className="pb-24">
         <div className={currentIndex === "home" ? "block" : "hidden"}>
           <HomeScreen user={user} />
+        </div>
+        <div className={currentIndex === "spin" ? "block" : "hidden"}>
+          <SpinScreen />
         </div>
         <div className={currentIndex === "mindfulness" ? "block" : "hidden"}>
           <MindfulnessScreen />
