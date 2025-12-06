@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      habits: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          difficulty: string
+          estimated_minutes: number
+          id: string
+          title: string
+          wheel_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          estimated_minutes?: number
+          id?: string
+          title: string
+          wheel_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          estimated_minutes?: number
+          id?: string
+          title?: string
+          wheel_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habits_wheel_id_fkey"
+            columns: ["wheel_id"]
+            isOneToOne: false
+            referencedRelation: "wheels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productivity_items: {
         Row: {
           completed: boolean
@@ -22,6 +63,7 @@ export type Database = {
           id: string
           missed: boolean
           scheduled_at: string
+          source: string | null
           title: string
           type: string
           updated_at: string
@@ -34,6 +76,7 @@ export type Database = {
           id?: string
           missed?: boolean
           scheduled_at: string
+          source?: string | null
           title: string
           type: string
           updated_at?: string
@@ -46,6 +89,7 @@ export type Database = {
           id?: string
           missed?: boolean
           scheduled_at?: string
+          source?: string | null
           title?: string
           type?: string
           updated_at?: string
@@ -86,6 +130,130 @@ export type Database = {
           unique_id?: string
           updated_at?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      spin_logs: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          habit_id: string
+          id: string
+          task_id: string | null
+          user_id: string
+          wheel_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          habit_id: string
+          id?: string
+          task_id?: string | null
+          user_id: string
+          wheel_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          habit_id?: string
+          id?: string
+          task_id?: string | null
+          user_id?: string
+          wheel_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spin_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spin_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "productivity_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spin_logs_wheel_id_fkey"
+            columns: ["wheel_id"]
+            isOneToOne: false
+            referencedRelation: "wheels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_spin_stats: {
+        Row: {
+          body_streak: number
+          created_at: string
+          id: string
+          last_body_date: string | null
+          last_life_date: string | null
+          last_mind_date: string | null
+          life_streak: number
+          mind_streak: number
+          total_completed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_streak?: number
+          created_at?: string
+          id?: string
+          last_body_date?: string | null
+          last_life_date?: string | null
+          last_mind_date?: string | null
+          life_streak?: number
+          mind_streak?: number
+          total_completed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body_streak?: number
+          created_at?: string
+          id?: string
+          last_body_date?: string | null
+          last_life_date?: string | null
+          last_mind_date?: string | null
+          life_streak?: number
+          mind_streak?: number
+          total_completed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wheels: {
+        Row: {
+          color_theme: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          order_index: number
+        }
+        Insert: {
+          color_theme?: string
+          created_at?: string
+          description?: string | null
+          id: string
+          name: string
+          order_index?: number
+        }
+        Update: {
+          color_theme?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          order_index?: number
         }
         Relationships: []
       }

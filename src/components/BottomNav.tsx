@@ -1,6 +1,6 @@
-import { Home, Brain, Calendar, Sparkles, Bot } from "lucide-react";
+import { Home, Brain, Calendar, Sparkles, Bot, Target } from "lucide-react";
 
-type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai";
+type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai" | "spin";
 
 interface BottomNavProps {
   active: NavItem;
@@ -9,10 +9,10 @@ interface BottomNavProps {
 
 const navItems = [
   { id: "home" as NavItem, icon: Home, label: "Home" },
-  { id: "mindfulness" as NavItem, icon: Brain, label: "Mindfulness" },
-  { id: "calendar" as NavItem, icon: Calendar, label: "Calendar" },
-  { id: "vibes" as NavItem, icon: Sparkles, label: "Mate Vibes" },
-  { id: "ai" as NavItem, icon: Bot, label: "AI Buddy" },
+  { id: "spin" as NavItem, icon: Target, label: "Spin" },
+  { id: "mindfulness" as NavItem, icon: Brain, label: "Mind" },
+  { id: "vibes" as NavItem, icon: Sparkles, label: "Vibes" },
+  { id: "ai" as NavItem, icon: Bot, label: "Unwind" },
 ];
 
 const BottomNav = ({ active, onNavigate }: BottomNavProps) => {
