@@ -1,14 +1,16 @@
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface NavigationTileProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  customIcon?: ReactNode;
   title: string;
   description: string;
   gradient: string;
   onClick?: () => void;
 }
 
-const NavigationTile = ({ icon: Icon, title, description, gradient, onClick }: NavigationTileProps) => {
+const NavigationTile = ({ icon: Icon, customIcon, title, description, gradient, onClick }: NavigationTileProps) => {
   return (
     <button
       onClick={onClick}
@@ -16,7 +18,7 @@ const NavigationTile = ({ icon: Icon, title, description, gradient, onClick }: N
     >
       <div className="flex items-start gap-4">
         <div className="p-3 rounded-xl bg-white/90 dark:bg-black/20 group-hover:scale-110 transition-transform">
-          <Icon size={28} className="text-foreground" />
+          {customIcon || (Icon && <Icon size={28} className="text-foreground" />)}
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-foreground mb-1">{title}</h3>

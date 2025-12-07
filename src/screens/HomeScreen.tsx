@@ -1,10 +1,11 @@
-import { Settings, Target, Zap, Flame, Brain, Bot, User as UserIcon } from "lucide-react";
+import { Settings, Target, Zap, Flame, Brain, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import MoodTracker from "@/components/MoodTracker";
 import NavigationTile from "@/components/NavigationTile";
+import UnwindOrb from "@/components/UnwindOrb";
 
 interface HomeScreenProps {
   user: User | null;
@@ -90,7 +91,7 @@ const HomeScreen = ({ user }: HomeScreenProps) => {
             gradient="bg-gradient-to-br from-lavender/30 to-secondary/30" 
           />
           <NavigationTile 
-            icon={Bot} 
+            customIcon={<UnwindOrb size="md" animated={false} />} 
             title="AI Buddy" 
             description="Chat with your wellness assistant" 
             gradient="bg-gradient-to-br from-sky/30 to-primary/30" 
