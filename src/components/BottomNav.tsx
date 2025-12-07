@@ -1,4 +1,5 @@
-import { Home, Brain, Calendar, Sparkles, Bot, Target } from "lucide-react";
+import { Home, Brain, Calendar, Sparkles, Target } from "lucide-react";
+import UnwindOrb from "@/components/UnwindOrb";
 
 type NavItem = "home" | "mindfulness" | "calendar" | "vibes" | "ai" | "spin";
 
@@ -8,11 +9,11 @@ interface BottomNavProps {
 }
 
 const navItems = [
-  { id: "home" as NavItem, icon: Home, label: "Home" },
-  { id: "spin" as NavItem, icon: Target, label: "Spin" },
-  { id: "mindfulness" as NavItem, icon: Brain, label: "Mind" },
-  { id: "vibes" as NavItem, icon: Sparkles, label: "Vibes" },
-  { id: "ai" as NavItem, icon: Bot, label: "Unwind" },
+  { id: "home" as NavItem, icon: Home, label: "Home", isOrb: false },
+  { id: "spin" as NavItem, icon: Target, label: "Spin", isOrb: false },
+  { id: "mindfulness" as NavItem, icon: Brain, label: "Mind", isOrb: false },
+  { id: "vibes" as NavItem, icon: Sparkles, label: "Vibes", isOrb: false },
+  { id: "ai" as NavItem, icon: null, label: "Unwind", isOrb: true },
 ];
 
 const BottomNav = ({ active, onNavigate }: BottomNavProps) => {
@@ -34,7 +35,11 @@ const BottomNav = ({ active, onNavigate }: BottomNavProps) => {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon size={24} className={isActive ? "animate-scale-in" : ""} />
+                {item.isOrb ? (
+                  <UnwindOrb size="sm" animated={isActive} />
+                ) : (
+                  Icon && <Icon size={24} className={isActive ? "animate-scale-in" : ""} />
+                )}
                 <span className="text-xs font-medium">{item.label}</span>
               </button>
             );

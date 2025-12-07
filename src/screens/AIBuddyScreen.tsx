@@ -7,6 +7,7 @@ import QuickActionChips from "@/components/QuickActionChips";
 import BuddyNameModal from "@/components/BuddyNameModal";
 import PersonalitySelector from "@/components/PersonalitySelector";
 import DataIntegrationPanel from "@/components/DataIntegrationPanel";
+import UnwindOrb from "@/components/UnwindOrb";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -194,9 +195,7 @@ const AIBuddyScreen = () => {
         <div className="max-w-md mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-lavender rounded-full flex items-center justify-center">
-                <span className="text-lg">{getPersonalityEmoji()}</span>
-              </div>
+              <UnwindOrb size="md" />
               <div>
                 <h1 className="font-bold text-foreground">{buddyName || "AI Buddy"}</h1>
                 <p className="text-xs text-muted-foreground capitalize">{personality} mode</p>
