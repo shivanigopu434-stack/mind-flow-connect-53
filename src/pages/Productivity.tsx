@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckSquare, Target, Bell, Heart, Pill, ArrowLeft, Check, X, BellOff } from "lucide-react";
+import { Plus, CheckSquare, Target, Bell, Heart, Pill, ArrowLeft, Check, X, BellOff, Brain, Dumbbell, Sparkles, Disc } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Switch } from "@/components/ui/switch";
 import { Preferences } from "@capacitor/preferences";
 
-type ItemType = "task" | "goal" | "reminder" | "self-care" | "medicine";
+type ItemType = "task" | "goal" | "reminder" | "self-care" | "medicine" | "mind" | "body" | "life";
 
 interface ProductivityItem {
   id: string;
@@ -30,14 +30,18 @@ interface ProductivityItem {
   scheduled_at: string;
   completed: boolean;
   missed: boolean;
+  source?: string | null;
 }
 
-const typeConfig = {
+const typeConfig: Record<ItemType, { icon: React.ComponentType<{ className?: string }>, label: string, color: string }> = {
   task: { icon: CheckSquare, label: "Task", color: "bg-blue-500" },
   goal: { icon: Target, label: "Goal", color: "bg-purple-500" },
   reminder: { icon: Bell, label: "Reminder", color: "bg-yellow-500" },
   "self-care": { icon: Heart, label: "Self-Care", color: "bg-pink-500" },
   medicine: { icon: Pill, label: "Medicine", color: "bg-green-500" },
+  mind: { icon: Brain, label: "Mind", color: "bg-sky-500" },
+  body: { icon: Dumbbell, label: "Body", color: "bg-emerald-500" },
+  life: { icon: Sparkles, label: "Life", color: "bg-amber-500" },
 };
 
 const Productivity = () => {
